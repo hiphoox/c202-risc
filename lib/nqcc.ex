@@ -12,18 +12,20 @@ defmodule Nqcc do
 
   def main(args) do
     res= parse_args(args)
-     process_file(res)
+    if elem(res,1) != [] do
+      process_file(res)
+      end
   end
 
   def parse_args(args) do
-    OptionParser.parse(args, switches: [h: :boolean, a: :boolean])
+    opcion=OptionParser.parse(args, switches: [h: :boolean, a: :boolean])
+    opcion
     |>IO.inspect(label: "\nSanitizer ouput")
     |>Tuple.to_list()
     |>hd
     |>IO.inspect(label: "\nSanitizer ouput")
     |>Enum.map(fn (x)-> process_args(x) end)
-    OptionParser.parse(args, switches: [h: :boolean, a: :boolean])
-
+    opcion
   end
 
   defp process_args({:h ,true}) do
@@ -35,12 +37,11 @@ defmodule Nqcc do
   defp process_args([l: true])do
       IO.puts("Se imprimio l")
   end
-  defp process_file({{tupa}, _, _})do
-    IO.inspect(tupa,label: "\nSanitizer ouput")
-  end
 
   defp process_file({_, [file_name], _}) do
+    if file_name != [] do
     compile_file(file_name)
+    end
   end
 
   defp compile_file(file_path) do
