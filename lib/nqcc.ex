@@ -7,7 +7,7 @@ defmodule Nqcc do
     "a" => "Prints the .ams file",
     "t" => "Prints the AST",
     "l" => "Prints the list with atmos of the text",
-    "s" => ""
+    "s" => "Prints the file become to String"
   }
 
   def main(args) do
@@ -18,13 +18,11 @@ defmodule Nqcc do
   end
 
   def parse_args(args) do
-    opcion=OptionParser.parse(args, switches: [h: :boolean, a: :boolean])
+    opcion=OptionParser.parse(args, switches: [h: :boolean, a: :boolean, t: :boolean, l: :boolean, s: :boolean])
     opcion
-    |>IO.inspect(label: "\nSanitizer ouput")
     |>Tuple.to_list()
     |>hd
-    |>IO.inspect(label: "\nSanitizer ouput")
-    |>Enum.map(fn (x)-> process_args(x) end)
+    |>Enum.map(fn (x)->if x=={:h,true}do process_args(x) end end)
     opcion
   end
 
@@ -34,28 +32,42 @@ defmodule Nqcc do
   defp process_args({:a ,true})do
       IO.puts("Se debe de imprimir a")
   end
-  defp process_args([l: true])do
-      IO.puts("Se imprimio l")
+  defp process_args({:t ,true})do
+      IO.puts("Se debe de imprimir AST")
+  end 
+  defp process_args({:l ,true})do
+      IO.puts("Se debe de imprimir Lexer")
+  end  
+  defp process_args({:s ,true})do
+      IO.puts("Se debe de imprimir string")
   end
 
-  defp process_file({_, [file_name], _}) do
-    if file_name != [] do
-    compile_file(file_name)
-    end
+  defp process_file({accesos, [file_name], _}) do
+    compile_file(file_name,accesos)
   end
 
-  defp compile_file(file_path) do
+  defp compile_file(file_path,accesos) do
     IO.puts("Compiling file: " <> file_path)
     assembly_path = String.replace_trailing(file_path, ".c", ".s")
 
-    File.read!(file_path)
-    |> Sanitizer.sanitize_source()
-    |> IO.inspect(label: "\nSanitizer ouput")
-    |> Lexer.scan_words()
-    |> IO.inspect(label: "\nLexer ouput")
-    |> Parser.parse_program()
-    |> IO.inspect(label: "\nParser ouput")
-    |> CodeGenerator.generate_code()
+    path=File.read!(file_path)
+    sanitizado=Sanitizer.sanitize_source(path)
+    if Enum.any?(accesos,fn(x)->x == {:s,true} end)do
+      IO.inspect(sanitizado, label: "\nSanitizer ouput")
+    end
+    lexado=Lexer.scan_words(sanitizado)
+    if Enum.any?(accesos,fn(x)->x == {:l,true} end)do
+      IO.inspect(lexado, label: "\nLexer ouput")
+    end
+    parseado=Parser.parse_program(lexado)
+    if Enum.any?(accesos,fn(x)->x == {:t,true} end)do
+      IO.inspect(parseado, label: "\nParcer ouput")
+    end
+    generado=CodeGenerator.generate_code(parseado)
+    if Enum.any?(accesos,fn(x)->x == {:a,true} end)do
+    IO.inspect(generado, label: "\nCode Generator ouput")
+    end
+    generado
     |> Linker.generate_binary(assembly_path)
   end
 
