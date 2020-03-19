@@ -106,6 +106,50 @@ defmodule LexerTest do
     assert Lexer.scan_words(["int", "main", "(", ")", "{", "return", "2", ";", "}"]) ==
              state[:tokens]
   end
+  #nuevas test
+  test "corchetes separados", state do
+    code = """
+    intmain(  )
+    {return  2;}
+    """
+    s_code = Sanitizer.sanitize_source(code)
+    assert Lexer.scan_words(s_code) == state[:tokens]
+  end
+  test "todo junto", state do
+    code = """
+    intmain(){return2;}
+    """
+    s_code = Sanitizer.sanitize_source(code)
+    assert Lexer.scan_words(s_code) == state[:tokens]
+  end
+  test "input lines of space", state do
+    code = """
+
+
+
+
+
+    intmain(){
+      return2;}
+    """
+    s_code = Sanitizer.sanitize_source(code)
+    assert Lexer.scan_words(s_code) == state[:tokens]
+  end
+  test "output lines of space", state do
+    code = """
+    intmain(){
+      return2;}
+
+
+
+
+
+
+    """
+    s_code = Sanitizer.sanitize_source(code)
+    assert Lexer.scan_words(s_code) == state[:tokens]
+  end
+
 
   # tests to fail
   test "wrong case", state do
