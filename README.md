@@ -3,6 +3,10 @@
 
 ![Manual](https://github.com/hiphoox/c202-risc/blob/master/Manual.pdf)
 
+### Document SRS
+![SRS](https://github.com/hiphoox/c202-risc/blob/master/SRS.pdf)
+
+
 
 
 
