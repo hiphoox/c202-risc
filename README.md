@@ -1,4 +1,16 @@
-# Nqcc
+# Compilador 
+## Manual
+![Manual](https://github.com/hiphoox/c202-risc/blob/master/Manual.pdf)
+
+
+
+
+
+
+
+
+
+
 
 **This is a nice small C subset compiler implemented in Elixir.**
 
