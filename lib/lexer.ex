@@ -39,9 +39,15 @@ defmodule Lexer do
 
         "main" <> rest ->
           {:main_keyword, rest}
-
+        "-"<> rest->
+          {:negation_operation,rest}
+        "~"<> rest ->
+          {:bitwise_operation,rest}
+        "!"<> rest ->
+          {:negation_logical,rest}
         rest ->
           get_constant(rest)
+
       end
 
     if token != :error do
