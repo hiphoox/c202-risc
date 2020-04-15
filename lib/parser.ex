@@ -105,9 +105,15 @@ defmodule Parser do
       tupla = elem(firts_tupla,0)
       Enum.at(tupla,0)
       end
-    case next_token do
+    if(next_token==:negation_operation|| next_token==:bitwise_operation||next_token==:negation_logical)do
+      {expresion,resto}=parse_expression(rest,code_error)
+      {%AST{node_name: :unitary_expression,value: next_token,left_node: expresion},resto}
+    else
+      ##Case que ubica valores
+      case next_token do
       {:constant, value} -> {%AST{node_name: :constant, value: value}, rest}
       _ -> {error.(";",code_error), rest}
+      end
     end
   end
 end
