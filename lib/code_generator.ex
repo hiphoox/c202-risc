@@ -36,13 +36,27 @@ defmodule CodeGenerator do
   end
 
   def emit_code(:return, code_snippet, _) do
-    """
-        movl    #{code_snippet}, %eax
+    code_snippet<>"""
+
+        movl    %edx, %eax
         ret
     """
   end
+  def emit_code(:unitary_expression,code_snippet,:negation_operation) do
+    code_snippet<>"""
 
+    neg %edx
+    """
+  end
+  def emit_code(:unitary_expression,code_snippet,:bitwise_operation) do
+    code_snippet<>"""
+
+      not %edx
+    """
+  end
+
+  #el registro edx se utilizara para almacenar los datos y hacer operaciones unitarias sobre el
   def emit_code(:constant, _code_snippet, value) do
-    "$#{value}"
+    " movl $#{value},%edx"
   end
 end
