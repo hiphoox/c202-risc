@@ -54,6 +54,15 @@ defmodule CodeGenerator do
       not %edx
     """
   end
+  def emit_code(:unitary_expression,code_snippet,:negation_logical)do
+    code_snippet<>"""
+
+      movl $0,%eax
+      cmpl %eax,%edx
+      movl $0,%edx
+      sete %dl
+      """
+  end
 
   #el registro edx se utilizara para almacenar los datos y hacer operaciones unitarias sobre el
   def emit_code(:constant, _code_snippet, value) do
