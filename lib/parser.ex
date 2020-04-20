@@ -1,5 +1,6 @@
 defmodule Parser do
   def parse_program(token_list,list_number) do
+    IO.puts("\nThe program is parsing")
     function = parse_function(token_list,list_number)
     case function do
       {{:error, error_message}, _rest} ->

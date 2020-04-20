@@ -1,5 +1,6 @@
 defmodule Lexer do
   def scan_words(words) do
+    IO.puts("\nLexing the program")
     listado=Enum.flat_map(words, &lex_raw_tokens/1)
     if Enum.any?(listado,fn x->
       case x do

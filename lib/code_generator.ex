@@ -1,9 +1,8 @@
 defmodule CodeGenerator do
   def generate_code(ast) do
-    code = post_order(ast)
-    IO.puts("\nCode Generator output:")
-    IO.puts(code)
-    code
+    IO.puts("Generating assembler")
+    post_order(ast)
+
   end
 
   def post_order(node) do
@@ -51,21 +50,18 @@ defmodule CodeGenerator do
   def emit_code(:unitary_expression,code_snippet,:bitwise_operation) do
     code_snippet<>"""
 
-      not %edx
+    not %edx
     """
   end
   def emit_code(:unitary_expression,code_snippet,:negation_logical)do
-    code_snippet<>"""
-
-      movl $0,%eax
-      cmpl %eax,%edx
-      movl $0,%edx
-      sete %dl
-      """
+   code_snippet<>"
+    movl $0,%eax
+    cmpl %eax,%edx
+    movl $0,%edx
+    sete %dl"
   end
-
   #el registro edx se utilizara para almacenar los datos y hacer operaciones unitarias sobre el
   def emit_code(:constant, _code_snippet, value) do
-    " movl $#{value},%edx"
+    "movl $#{value},%edx"
   end
 end
