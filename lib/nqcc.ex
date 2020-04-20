@@ -57,10 +57,12 @@ defmodule Nqcc do
       IO.inspect(sanitizado, label: "\nSanitizer ouput")
     end
     lexado=Lexer.scan_words(sanitizado)
+    Manager_error.verify(lexado)
     if Enum.any?(accesos,fn(x)->x == {:l,true} end)do
       IO.inspect(lexado, label: "\nLexer ouput")
     end
     parseado=Parser.parse_program(lexado,line)
+    Manager_error.verify(parseado)
     if Enum.any?(accesos,fn(x)->x == {:t,true} end)do
       IO.inspect(parseado, label: "\nParcer ouput")
     end

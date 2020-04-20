@@ -1,6 +1,18 @@
 defmodule Lexer do
   def scan_words(words) do
-    Enum.flat_map(words, &lex_raw_tokens/1)
+    listado=Enum.flat_map(words, &lex_raw_tokens/1)
+    if Enum.any?(listado,fn x->
+      case x do
+        {:error,_}->
+          true
+        _->
+          false
+      end
+    end)do
+      List.last(listado)
+    else
+      listado
+    end
   end
 
   def get_constant(program) do
@@ -54,7 +66,7 @@ defmodule Lexer do
       remaining_tokens = lex_raw_tokens(rest)
       [token | remaining_tokens]
     else
-      [:error]
+      {:error,rest}
     end
   end
 
