@@ -1,1 +1,2 @@
-int main(){return !2;}
+  main()
+ {return !2;}

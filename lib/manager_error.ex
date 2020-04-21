@@ -8,6 +8,4 @@ defmodule Manager_error do
           tupla
         end
   end
-
-
 end

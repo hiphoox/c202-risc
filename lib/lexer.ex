@@ -67,7 +67,7 @@ defmodule Lexer do
       remaining_tokens = lex_raw_tokens(rest)
       [token | remaining_tokens]
     else
-      {:error,rest}
+      [{:error,rest}]
     end
   end
 

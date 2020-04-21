@@ -5,7 +5,8 @@ defmodule Parser do
     case function do
       {{:error, error_message}, _rest} ->
         {:error, error_message}
-
+        {:error,error_message}->
+          {:error, error_message}
       {function_node, rest} ->
         if rest == [] do
           %AST{node_name: :program, left_node: function_node}
@@ -15,12 +16,13 @@ defmodule Parser do
     end
   end
 
+  @spec parse_function(nonempty_maybe_improper_list, any) :: any
   def parse_function([next_token | rest],code_line) do
     #Funcion de manejo de errores
     error = fn(cadena,code) ->
       max = length(code)
       range = 0..max-1
-      error_tupla = Enum.map(range,fn (x)-> if(String.jaro_distance(Enum.at(code,x),cadena) >= 0.5, do: {:error,"Error in the line #{x+1}"} )end)
+      error_tupla = Enum.map(range,fn (x)-> if(String.jaro_distance(Enum.at(code,x),cadena) >= 0.5, do: {:error,"Error in the line #{x+1}: #{cadena} is missing"} )end)
       firts_tupla = Enum.split_with(error_tupla, fn x -> x != nil end)
       tupla = elem(firts_tupla,0)
       Enum.at(tupla,0)
@@ -39,7 +41,6 @@ defmodule Parser do
 
             if next_token == :open_brace do
               statement = parse_statement(rest,code_line)
-
               case statement do
                 {{:error, error_message}, rest} ->
                   {{:error, error_message}, rest}
