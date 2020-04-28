@@ -17,12 +17,13 @@ defmodule Lexer do
   end
 
   def get_constant(program) do
+    cif=program
     case Regex.run(~r/^\d+/, program) do
       [value] ->
         {{:constant, String.to_integer(value)}, String.trim_leading(program, value)}
 
-      program ->
-        {:error, "Token not valid: #{program}"}
+      _program->
+        {:error, "Token not valid: #{cif}"}
     end
   end
 

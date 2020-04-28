@@ -1,2 +1,2 @@
   main()
- {return !2;}
+ {return !p2;}
