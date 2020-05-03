@@ -59,6 +59,12 @@ defmodule Lexer do
           {:bitwise_operation,rest}
         "!"<> rest ->
           {:negation_logical,rest}
+        "+"<>rest->
+           {:plus_operation,rest}
+        "*"<>rest->
+          {:multiplication_operation,rest}
+        "/"<>rest->
+          {:divition_operation,rest}
         rest ->
           get_constant(rest)
 
