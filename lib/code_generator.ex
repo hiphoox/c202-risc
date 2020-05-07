@@ -97,4 +97,15 @@ defmodule CodeGenerator do
     "
 
   end
+  def emit_code(:binary_operation,code_snippet,code_snippet2,:divition_operation)do
+    code_snippet<>"
+    push %ebx
+    "<>code_snippet2<>"
+    pop %eax
+    cdq
+    idivl %ebx
+    movl %eax,%ebx
+    "
+
+  end
 end
