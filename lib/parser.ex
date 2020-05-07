@@ -90,7 +90,7 @@ defmodule Parser do
           if next_token == :semicolon do
             {%AST{node_name: :return, left_node: exp_node}, rest}
           else
-            {{:error, "#{error.(";",code_line)} semicolon missed after constant to finish return statement"}, rest}
+            {{:error, "#{error.(";",code_line)} semicolon missed after constant to finish return statement"} , rest}
           end
       end
     else
@@ -113,23 +113,29 @@ defmodule Parser do
         {:error,_}->##devuelve el error si existio
               {nodo,resto}
         _->##en otro caso
-          [next_token2|rest2]=resto ##pasamos al siguinete token
-          if(next_token2==:plus_operation||next_token2==:negation_operation) do##si es + o - hay que buscar al otro termino
-              [next_token3|rest3]=rest2##pasamos al siguiente token
-              {nodo2,resto2}=parse_term([next_token3 | rest3], code_number,error)##se busca al otro termino
-              case nodo2 do ##verificar si existio error en el segundo termino
-                {:error,_}->##si existio error devolver el error
-                    {nodo2,resto2}
-                    _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
-                      ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
-                    {%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
-              end
-          else##si no existe + o - retorna el nodo y el resto como lo recibio
-            {nodo,resto}
-          end
+          recall_expression(resto, {nodo, resto}, code_number, error)
       end
 
   end
+
+  def recall_expression([next_token2|rest2],{nodo,resto},code_number,error) do
+    if(next_token2==:plus_operation||next_token2==:negation_operation) do##si es + o - hay que buscar al otro termino
+    [next_token3|rest3]=rest2##pasamos al siguiente token
+    {nodo2,resto2}=parse_term([next_token3 | rest3], code_number,error)##se busca al otro termino
+    case nodo2 do ##verificar si existio error en el segundo termino
+      {:error,_}->##si existio error devolver el error
+          {nodo2,resto2}
+          _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
+            ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
+          resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+          recall_expression(resto2, resultado, code_number, error)##verificamos que no existan mas operadores
+    end
+  else##si no existe + o - retorna el nodo y el resto como lo recibio
+  {nodo,resto}
+  end
+
+
+   end
   def parse_factor([next_token | rest],code_number,error)do
       if(next_token==:negation_operation|| next_token==:bitwise_operation||next_token==:negation_logical)do##verifica que sea op unitario
       [next_token2|rest2]=rest##si fue initario pasar al sig token en rest
@@ -148,9 +154,11 @@ defmodule Parser do
             {:error,_}->##error se devuelve
                 {nodo,resto}
             _->##si se pudo hacer verificar que se cierra parentesis
-                  [next_token3|rest3]=rest2##no posicionamos en el sig token
+                  [next_token3|rest3]=resto##no posicionamos en el sig token
+                  IO.puts("next token3")
+                  IO.inspect(next_token3)
                   if (next_token3==:close_paren) do##si se cierro parentesis entonces regresamos el formamos el nodo
-                    {nodo,resto}
+                    {nodo,rest3}
                   else
                     {{:error,"falta )"},rest3};
                   end
@@ -172,22 +180,23 @@ defmodule Parser do
         {:error,_}->##si existio error regresa el error
               {nodo,resto}
               _->##de otra forma pasar al siguiente token
-                [next_token2|resto2]=resto
-                if(next_token2==:multiplication_operation||next_token2==:divition_operation)do ##ver si existe * o /
-                  [next_token3|resto3]=resto2##nos vamos al siguiente token
-                  {nodo2,rest2}=parse_factor([next_token3 | resto3], code_number, error)##sacamps al siguiente factor
-                  case nodo2 do
-                    {:error,_}->##si hay error devolver la tupla
-                      {nodo2,rest2}
-                      _->##si no existio error podremos formar la tupla del nodo, con el resto de lista de tokens
-                      {%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},rest2}
-                  end
-                  else ##si el token es * o / regresa el factor que sacamos al principio
-                  {nodo,resto}
-                end
-
+               recall_term(resto,{nodo,resto},code_number,error)
       end
-
   end
-
+def recall_term([next_token2|rest2],{nodo,resto},code_number,error) do
+  if(next_token2==:multiplication_operation||next_token2==:divition_operation) do##si es + o - hay que buscar al otro termino
+  [next_token3|rest3]=rest2##pasamos al siguiente token
+  {nodo2,resto2}=parse_factor([next_token3 | rest3], code_number,error)##se busca al otro termino
+  case nodo2 do ##verificar si existio error en el segundo termino
+    {:error,_}->##si existio error devolver el error
+        {nodo2,resto2}
+        _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
+          ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
+        resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+        recall_term(resto2, resultado, code_number, error)##verificamos que no existan mas operadores
+  end
+else##si no existe + o - retorna el nodo y el resto como lo recibio
+{nodo,resto}
+end
+end
 end
