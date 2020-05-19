@@ -53,6 +53,22 @@ defmodule Lexer do
 
         "main" <> rest ->
           {:main_keyword, rest}
+         "&&"<>rest->
+          {:and_comparation,rest}
+        "||"<>rest->
+          {:or_comparation,rest}
+        "=="<>rest->
+           {:equal_comparation,rest}
+        "!="<>rest->
+          {:notEqual_comparation,rest}
+          "<="<>rest->
+            {:lessEqual_comparation,rest}
+        "<"<>rest->
+          {:less_comparation,rest}
+         ">="<>rest->
+            {:greateEqual_comparation,rest}
+       ">"<>rest->
+           {:greate_comparation,rest}
         "-"<> rest->
           {:negation_operation,rest}
         "~"<> rest ->
@@ -65,6 +81,7 @@ defmodule Lexer do
           {:multiplication_operation,rest}
         "/"<>rest->
           {:divition_operation,rest}
+
         rest ->
           get_constant(rest)
 
