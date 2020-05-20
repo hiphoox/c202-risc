@@ -2,16 +2,15 @@ defmodule Lexer do
   def scan_words(words) do
     IO.puts("\nLexing the program")
     listado=prelex_tokens(words,1)
-    |>IO.inspect(label: "lexer")
-    if Enum.any?(listado,fn x->
-      case x do
-        {:error,_}->
-          true
-        _->
-          false
-      end
-    end)do
-      List.last(listado)
+    filtro=Enum.filter(listado, fn x-> case x do
+      {:error,_}->
+        true
+      _->
+        false
+    end
+  end)
+    if Enum.count(filtro) != 0 do
+      List.first(filtro)
     else
       listado
     end
@@ -38,7 +37,7 @@ defmodule Lexer do
           lex_raw_tokens(token, num)
         end
       _->
-          if token !="\r\n" do
+          if token !="\r\n"&& token !=" \r\n" do
           final=lex_raw_tokens(token,num)
           Enum.concat(final,prelex_tokens(others,num))
           else
@@ -118,7 +117,7 @@ defmodule Lexer do
       end
 
     else
-      [{:error,rest,num}]
+      [{:error,rest<>" in line #{num}"}]
     end
   end
 
