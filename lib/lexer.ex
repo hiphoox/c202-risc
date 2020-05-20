@@ -1,7 +1,8 @@
 defmodule Lexer do
   def scan_words(words) do
     IO.puts("\nLexing the program")
-    listado=Enum.flat_map(words, &lex_raw_tokens/1)
+    listado=prelex_tokens(words,1)
+    |>IO.inspect(label: "lexer")
     if Enum.any?(listado,fn x->
       case x do
         {:error,_}->
@@ -22,12 +23,33 @@ defmodule Lexer do
       [value] ->
         {{:constant, String.to_integer(value)}, String.trim_leading(program, value)}
 
-      _program->
+      program->
+        if program != " " && program !="\r\n" do
         {:error, "Token not valid: #{cif}"}
+        end
+    end
+  end
+  def prelex_tokens([token|others],num) do
+    case others do
+      []->
+        if token=="\r\n"do
+        []
+        else
+          lex_raw_tokens(token, num)
+        end
+      _->
+          if token !="\r\n" do
+          final=lex_raw_tokens(token,num)
+          Enum.concat(final,prelex_tokens(others,num))
+          else
+            final=[]
+            Enum.concat(final,prelex_tokens(others,num+1))
+          end
     end
   end
 
-  def lex_raw_tokens(program) when program != "" do
+  def lex_raw_tokens(program,num)  do
+
     {token, rest} =
       case program do
         "{" <> rest ->
@@ -88,14 +110,17 @@ defmodule Lexer do
       end
 
     if token != :error do
-      remaining_tokens = lex_raw_tokens(rest)
-      [token | remaining_tokens]
+      if rest != ""do
+      remaining_tokens = lex_raw_tokens(rest,num)
+      [{token,num} | remaining_tokens]
+      else
+        [{token,num}]
+      end
+
     else
-      [{:error,rest}]
+      [{:error,rest,num}]
     end
   end
 
-  def lex_raw_tokens(_program) do
-    []
-  end
+
 end

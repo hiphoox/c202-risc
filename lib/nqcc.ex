@@ -49,8 +49,6 @@ defmodule Nqcc do
   defp compile_file(file_path,accesos) do
     IO.puts("Compiling file: " <> file_path)
     assembly_path = String.replace_trailing(file_path, ".c", ".s")
-    line = Line.line_code(File.read!(file_path))
-
     path=File.read!(file_path)
     sanitizado=Sanitizer.sanitize_source(path)
     if Enum.any?(accesos,fn(x)->x == {:s,true} end)do
@@ -61,7 +59,7 @@ defmodule Nqcc do
     if Enum.any?(accesos,fn(x)->x == {:l,true} end)do
       IO.inspect(lexado, label: "\nLexer ouput")
     end
-    parseado=Parser.parse_program(lexado,line)
+    parseado=Parser.parse_program(lexado)
     Manager_error.verify(parseado)
     if Enum.any?(accesos,fn(x)->x == {:t,true} end)do
       IO.inspect(parseado, label: "\nParcer ouput")

@@ -1,7 +1,7 @@
 defmodule Parser do
-  def parse_program(token_list,list_number) do
+  def parse_program(token_list) do
     IO.puts("\nThe program is parsing")
-    function = parse_function(token_list,list_number)
+    function = parse_function(token_list)
     case function do
       {{:error, error_message}, _rest} ->
         {:error, error_message}
@@ -16,119 +16,101 @@ defmodule Parser do
     end
   end
 
-  @spec parse_function(nonempty_maybe_improper_list, any) :: any
-  def parse_function([next_token | rest],code_line) do
-    #Funcion de manejo de errores
-    error = fn(cadena,code) ->
-      max = length(code)
-      range = 0..max-1
-      error_tupla = Enum.map(range,fn (x)-> if(String.jaro_distance(Enum.at(code,x),cadena) >= 0.5, do: {:error,"Error in the line #{x+1}: #{cadena} is missing"} )end)
-      firts_tupla = Enum.split_with(error_tupla, fn x -> x != nil end)
-      tupla = elem(firts_tupla,0)
-      Enum.at(tupla,0)
-      end
+  def parse_function([{next_token,num} | rest]) do
+    error=fn (cadena,numero) ->
+          {:error," #{cadena} is missing in line #{numero}"}
+    end
+
     if next_token == :int_keyword do
-      [next_token | rest] = rest
+      [{next_token,num} | rest] = rest
 
       if next_token == :main_keyword do
-        [next_token | rest] = rest
+        [{next_token,num} | rest] = rest
 
         if next_token == :open_paren do
-          [next_token | rest] = rest
+          [{next_token,num} | rest] = rest
 
           if next_token == :close_paren do
-            [next_token | rest] = rest
+            [{next_token,num} | rest] = rest
 
             if next_token == :open_brace do
-              statement = parse_statement(rest,code_line)
+              statement = parse_statement(rest)
               case statement do
                 {{:error, error_message}, rest} ->
                   {{:error, error_message}, rest}
 
-                {statement_node, [next_token | rest]} ->
+                {statement_node, [{next_token,num} | rest]} ->
                   if next_token == :close_brace do
                     {%AST{node_name: :function, value: :main, left_node: statement_node}, rest}
                   else
-                    {error.("}",code_line), rest}
+                    {error.("}",num), rest}
                   end
               end
             else
-              error.("{",code_line)
+              error.("{",num)
             end
           else
-            error.(")",code_line)
+            error.(")",num)
           end
         else
-          error.("(",code_line)
+          error.("(",num)
         end
       else
-        error.("main",code_line)
+        error.("main",num)
       end
     else
-      error.("int",code_line)
+      error.("int",num)
     end
   end
 
-  def parse_statement([next_token | rest],code_line) do
+  def parse_statement([{next_token,num} | rest]) do
     #Funcion de manejo de errores
-    error = fn(cadena,code) ->
-      max = length(code)
-      range = 0..max-1
-      error_tupla = Enum.map(range,fn (x)-> if(String.jaro_distance(Enum.at(code,x),cadena) >= 0.5, do: {:error,"Error in the line #{x+1}"} )end)
-      firts_tupla = Enum.split_with(error_tupla, fn x -> x != nil end)
-      tupla = elem(firts_tupla,0)
-      Enum.at(tupla,0)
-      end
+    error=fn (cadena,numero) ->
+      {:error," #{cadena} is missing in line #{numero}"}
+  end
     if next_token == :return_keyword do
-      expression = parse_expression(rest,code_line)
+      expression = parse_expression(rest)
 
       case expression do
         {{:error, error_message}, rest} ->
           {{:error, error_message}, rest}
 
-        {exp_node, [next_token | rest]} ->
+        {exp_node, [{next_token,num} | rest]} ->
           if next_token == :semicolon do
             {%AST{node_name: :return, left_node: exp_node}, rest}
           else
-            {{:error, "#{error.(";",code_line)} semicolon missed after constant to finish return statement"} , rest}
+            {{:error, "semicolon missed to finish return statement in line #{num}"} , rest}
           end
       end
     else
-      {error.("return",code_line), rest}
+      {error.("return",num), rest}
     end
   end
 
-  def parse_expression([next_token | rest],code_number) do
-    error = fn(cadena,code) ->
-      max = length(code)
-      range = 0..max-1
-      error_tupla = Enum.map(range,fn (x)-> if(String.jaro_distance(Enum.at(code,x),cadena) >= 0.5, do: {:error,"Error in the line #{x+2}, #{x}, o #{x+1} constant value does not exist or misplaced"} )end)
-      firts_tupla = Enum.split_with(error_tupla, fn x -> x != nil end)
-      tupla = elem(firts_tupla,0)
-      Enum.at(tupla,0)
-      end
+  def parse_expression([next_token | rest]) do
+
     ##al menos se debe de ejecutar una vez term
-    {nodo,resto}=parse_term([next_token | rest], code_number,error)
+    {nodo,resto}=parse_term([next_token | rest])
       case nodo do
         {:error,_}->##devuelve el error si existio
               {nodo,resto}
         _->##en otro caso
-          recall_expression(resto, {nodo, resto}, code_number, error)
+          recall_expression(resto, {nodo, resto})
       end
 
   end
 
-  def recall_expression([next_token2|rest2],{nodo,resto},code_number,error) do
+  def recall_expression([{next_token2,_num}|rest2],{nodo,resto}) do
     if(next_token2==:plus_operation||next_token2==:negation_operation) do##si es + o - hay que buscar al otro termino
     [next_token3|rest3]=rest2##pasamos al siguiente token
-    {nodo2,resto2}=parse_term([next_token3 | rest3], code_number,error)##se busca al otro termino
+    {nodo2,resto2}=parse_term([next_token3 | rest3])##se busca al otro termino
     case nodo2 do ##verificar si existio error en el segundo termino
       {:error,_}->##si existio error devolver el error
           {nodo2,resto2}
           _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
             ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
           resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
-          recall_expression(resto2, resultado, code_number, error)##verificamos que no existan mas operadores
+          recall_expression(resto2, resultado)##verificamos que no existan mas operadores
     end
   else##si no existe + o - retorna el nodo y el resto como lo recibio
   {nodo,resto}
@@ -136,10 +118,10 @@ defmodule Parser do
 
 
    end
-  def parse_factor([next_token | rest],code_number,error)do
+  def parse_factor([{next_token,num} | rest])do
       if(next_token==:negation_operation|| next_token==:bitwise_operation||next_token==:negation_logical)do##verifica que sea op unitario
       [next_token2|rest2]=rest##si fue initario pasar al sig token en rest
-      {nodo,resto}=parse_factor([next_token2|rest2],code_number,error)##volvemos a llamar a factor
+      {nodo,resto}=parse_factor([next_token2|rest2])##volvemos a llamar a factor
       case nodo do
         {:error,_}->##error se devuelve
             {nodo,resto}
@@ -149,51 +131,49 @@ defmodule Parser do
       else ##si no lo es pasar a sig condiciones
         if(next_token==:open_paren)do
           [next_token2|rest2]=rest## pasamos al siguiente token
-          {nodo,resto}=parse_expression([next_token2|rest2],code_number)##buscamos expresion
+          {nodo,resto}=parse_expression([next_token2|rest2])##buscamos expresion
           case nodo do
             {:error,_}->##error se devuelve
                 {nodo,resto}
             _->##si se pudo hacer verificar que se cierra parentesis
-                  [next_token3|rest3]=resto##no posicionamos en el sig token
-                  IO.puts("next token3")
-                  IO.inspect(next_token3)
+                  [{next_token3,num}|rest3]=resto##no posicionamos en el sig token
                   if (next_token3==:close_paren) do##si se cierro parentesis entonces regresamos el formamos el nodo
                     {nodo,rest3}
                   else
-                    {{:error,"falta )"},rest3};
+                    {{:error,"is missing ) in line #{num}"},rest3};
                   end
 
           end
         else ##si no es unitario o nohabre parentesisi significa que es un valor o caracter invalido
           case next_token do
             {:constant, value} -> {%AST{node_name: :constant, value: value}, rest}
-            _ -> {{:error,"valor invalido#{next_token}"}, rest}
+            _ -> {{:error,"valor invalido#{next_token} in line #{num}"}, rest}
             end
         end
       end
 
   end
 
-  def parse_term([next_token | rest],code_number,error)do
-    {nodo,resto}=parse_factor([next_token | rest], code_number, error)## se ejecuta al menos una vez
+  def parse_term([next_token | rest])do
+    {nodo,resto}=parse_factor([next_token | rest])## se ejecuta al menos una vez
       case nodo do
         {:error,_}->##si existio error regresa el error
               {nodo,resto}
               _->##de otra forma pasar al siguiente token
-               recall_term(resto,{nodo,resto},code_number,error)
+               recall_term(resto,{nodo,resto})
       end
   end
-def recall_term([next_token2|rest2],{nodo,resto},code_number,error) do
+def recall_term([{next_token2,_num}|rest2],{nodo,resto}) do
   if(next_token2==:multiplication_operation||next_token2==:divition_operation) do##si es + o - hay que buscar al otro termino
   [next_token3|rest3]=rest2##pasamos al siguiente token
-  {nodo2,resto2}=parse_factor([next_token3 | rest3], code_number,error)##se busca al otro termino
+  {nodo2,resto2}=parse_factor([next_token3 | rest3])##se busca al otro termino
   case nodo2 do ##verificar si existio error en el segundo termino
     {:error,_}->##si existio error devolver el error
         {nodo2,resto2}
         _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
           ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
         resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
-        recall_term(resto2, resultado, code_number, error)##verificamos que no existan mas operadores
+        recall_term(resto2, resultado)##verificamos que no existan mas operadores
   end
 else##si no existe + o - retorna el nodo y el resto como lo recibio
 {nodo,resto}

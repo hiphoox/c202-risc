@@ -1,3 +1,4 @@
-  int main()
- {return <=!!=;}
+ int main() {
+return 2+(2+2)*2+2)+2;
+}
 
