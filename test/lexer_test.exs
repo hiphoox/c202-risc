@@ -5,410 +5,379 @@ defmodule LexerTest do
   setup_all do
     {:ok,
      tokens: [
-       :int_keyword,
-       :main_keyword,
-       :open_paren,
-       :close_paren,
-       :open_brace,
-       :return_keyword,
-       {:constant, 2},
-       :semicolon,
-       :close_brace
+       {:int_keyword,1},
+       {:main_keyword,1},
+       {:open_paren,1},
+       {:close_paren,1},
+       {:open_brace,1},
+       {:return_keyword,2},
+       {{:constant, 2},2},
+       {:semicolon,2},
+       {:close_brace,3}
      ]}
   end
 
-  # tests to pass
+  # tests to pass, con modificaciones para la tercera entrega
   test "return 2", state do
-    code = """
-      int main() {
-        return 2;
-    }
-    """
-
-    s_code = Sanitizer.sanitize_source(code)
-
-    assert Lexer.scan_words(s_code) == state[:tokens]
+    assert Lexer.scan_words(["int", "main(){","\r\n", "return", "2;","\r\n","}"]) == state[:tokens]
   end
 
   test "return 0", state do
-    code = """
-      int main() {
-        return 0;
-    }
-    """
+    s_code = ["int", "main(){","\r\n", "return", "0;","\r\n","}"]
 
-    s_code = Sanitizer.sanitize_source(code)
-
-    expected_result = List.update_at(state[:tokens], 6, fn _ -> {:constant, 0} end)
+    expected_result = List.update_at(state[:tokens], 6, fn _ -> {{:constant, 0},2} end)
     assert Lexer.scan_words(s_code) == expected_result
   end
 
   test "multi_digit", state do
-    code = """
-      int main() {
-        return 100;
-    }
-    """
+    s_code = ["int", "main(){","\r\n", "return", "100;","\r\n","}"]
 
-    s_code = Sanitizer.sanitize_source(code)
-
-    expected_result = List.update_at(state[:tokens], 6, fn _ -> {:constant, 100} end)
+    expected_result = List.update_at(state[:tokens], 6, fn _ -> {{:constant, 100},2} end)
     assert Lexer.scan_words(s_code) == expected_result
   end
 
-  test "new_lines", state do
-    code = """
-    int
-    main
-    (
-    )
-    {
-    return
-    2
-    ;
-    }
-    """
+  test "new_lines" do
+    s_code = ["int","\r\n","main","\r\n","(","\r\n",")","\r\n","{","\r\n","return","\r\n", "100","\r\n",";","\r\n","}"]
+    assert Lexer.scan_words(s_code) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,2},
+      {:open_paren,3},
+      {:close_paren,4},
+      {:open_brace,5},
+      {:return_keyword,6},
+      {{:constant, 100},7},
+      {:semicolon,8},
+      {:close_brace,9}
+    ]
 
-    s_code = Sanitizer.sanitize_source(code)
-
-    assert Lexer.scan_words(s_code) == state[:tokens]
   end
 
-  test "no_newlines", state do
-    code = """
-    int main(){return 2;}
-    """
-
-    s_code = Sanitizer.sanitize_source(code)
-
-    assert Lexer.scan_words(s_code) == state[:tokens]
+  test "no_newlines" do
+    s_code = ["int","main(){return2;}"]
+    assert Lexer.scan_words(s_code) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,1},
+      {{:constant, 2},1},
+      {:semicolon,1},
+      {:close_brace,1}
+    ]
   end
 
-  test "spaces", state do
-    code = """
-    int   main    (  )  {   return  2 ; }
-    """
-
-    s_code = Sanitizer.sanitize_source(code)
-
-    assert Lexer.scan_words(s_code) == state[:tokens]
+  test "spaces" do
+    s_code = ["int","main(",")","{","return","2",";}"]
+    assert Lexer.scan_words(s_code) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,1},
+      {{:constant, 2},1},
+      {:semicolon,1},
+      {:close_brace,1}
+    ]
   end
 
-  test "elements separated just by spaces", state do
-    assert Lexer.scan_words(["int", "main(){return", "2;}"]) == state[:tokens]
+  test "elements separated just by spaces" do
+    assert Lexer.scan_words(["int", "main(){return", "2;}"]) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,1},
+      {{:constant, 2},1},
+      {:semicolon,1},
+      {:close_brace,1}
+    ]
   end
 
   test "function name separated of function body", state do
-    assert Lexer.scan_words(["int", "main()", "{return", "2;}"]) == state[:tokens]
+    assert Lexer.scan_words(["int", "main(){","\r\n", "return", "2;","\r\n","}"]) == state[:tokens]
   end
 
-  test "everything is separated", state do
+  test "everything is separated" do
     assert Lexer.scan_words(["int", "main", "(", ")", "{", "return", "2", ";", "}"]) ==
-             state[:tokens]
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,1},
+      {{:constant, 2},1},
+      {:semicolon,1},
+      {:close_brace,1}
+    ]
   end
-  #nuevas test
-  test "corchetes separados", state do
-    code = """
-    intmain(  )
-    {return  2;}
-    """
-    s_code = Sanitizer.sanitize_source(code)
-    assert Lexer.scan_words(s_code) == state[:tokens]
+  #nuevas pruebas entrega 1
+  test "corchetes separados" do
+    assert Lexer.scan_words(["intmain(", ")","\r\n", "{return2;}"]) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,2},
+      {:return_keyword,2},
+      {{:constant, 2},2},
+      {:semicolon,2},
+      {:close_brace,2}
+    ]
+
   end
-  test "todo junto", state do
-    code = """
-    intmain(){return2;}
-    """
-    s_code = Sanitizer.sanitize_source(code)
-    assert Lexer.scan_words(s_code) == state[:tokens]
+  test "todo junto" do
+    assert Lexer.scan_words(["intmain(){return2;}"]) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,1},
+      {{:constant, 2},1},
+      {:semicolon,1},
+      {:close_brace,1}
+    ]
   end
-  test "input lines of space", state do
-    code = """
-
-
-
-
-
-    intmain(){
-      return2;}
-    """
-    s_code = Sanitizer.sanitize_source(code)
-    assert Lexer.scan_words(s_code) == state[:tokens]
-  end
-  test "output lines of space", state do
-    code = """
-    intmain(){
-      return2;}
-
-
-
-
-
-
-    """
-    s_code = Sanitizer.sanitize_source(code)
-    assert Lexer.scan_words(s_code) == state[:tokens]
-  end
-  #Entrega_2
-  test "negation operational"do
-    code ="""
-    int main(){
-      return -2;
-    }
-    """
-    s_code = Sanitizer.sanitize_source(code)
+  test "input lines of space" do
+    s_code = ["\r\n","\r\n","\r\n","\r\n","\r\n","intmain(){","\r\n","return2;}"]
     assert Lexer.scan_words(s_code) ==
     [
-      :int_keyword,
-      :main_keyword,
-      :open_paren,
-      :close_paren,
-      :open_brace,
-      :return_keyword,
-      :negation_operation,
-      {:constant, 2},
-      :semicolon,
-      :close_brace
+      {:int_keyword,6},
+      {:main_keyword,6},
+      {:open_paren,6},
+      {:close_paren,6},
+      {:open_brace,6},
+      {:return_keyword,7},
+      {{:constant, 2},7},
+      {:semicolon,7},
+      {:close_brace,7}
     ]
+  end
+  test "output lines of space" do
+    s_code = ["intmain(){","\r\n","return2;}","\r\n","\r\n","\r\n","\r\n","\r\n"]
+    assert Lexer.scan_words(s_code) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,2},
+      {{:constant, 2},2},
+      {:semicolon,2},
+      {:close_brace,2}
+    ]
+
+  end
+  #Nuevas pruebas entrega 2
+  test "negation operational"do
+    s_code = ["int","main(){","\r\n","return","-2;","\r\n","}"]
+    assert Lexer.scan_words(s_code) ==
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,2},
+      {:negation_operation,2},
+      {{:constant, 2},2},
+      {:semicolon,2},
+      {:close_brace,3}
+    ]
+
     end
   test "bitwise operation"do
-    code ="""
-    int main(){
-     return ~2;
-    }
-    """
-    s_code = Sanitizer.sanitize_source(code)
+    s_code = ["int","main(){","\r\n","return","~2;","\r\n","}"]
     assert Lexer.scan_words(s_code) ==
     [
-    :int_keyword,
-    :main_keyword,
-    :open_paren,
-    :close_paren,
-    :open_brace,
-    :return_keyword,
-    :bitwise_operation,
-    {:constant, 2},
-    :semicolon,
-    :close_brace
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,2},
+      {:bitwise_operation,2},
+      {{:constant, 2},2},
+      {:semicolon,2},
+      {:close_brace,3}
     ]
   end
   test "negation logical"do
-    code ="""
-    int main(){
-    return !2;
-    }
-    """
-    s_code = Sanitizer.sanitize_source(code)
-  assert Lexer.scan_words(s_code) ==
+    s_code = ["int","main(){","\r\n","return","!2;","\r\n","}"]
+    assert Lexer.scan_words(s_code) ==
     [
-    :int_keyword,
-    :main_keyword,
-    :open_paren,
-    :close_paren,
-    :open_brace,
-    :return_keyword,
-    :negation_logical,
-    {:constant, 2},
-    :semicolon,
-    :close_brace
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,2},
+      {:negation_logical,2},
+      {{:constant, 2},2},
+      {:semicolon,2},
+      {:close_brace,3}
     ]
+
   end
   test "BO & NO"do
-    code ="""
-      int main(){
-      return ~-2;
-      }
-      """
-  s_code = Sanitizer.sanitize_source(code)
+  s_code = ["int","main(){","\r\n","return","~-2;","\r\n","}"]
   assert Lexer.scan_words(s_code) ==
-   [
-    :int_keyword,
-    :main_keyword,
-    :open_paren,
-    :close_paren,
-    :open_brace,
-    :return_keyword,
-    :bitwise_operation,
-    :negation_operation,
-    {:constant, 2},
-    :semicolon,
-    :close_brace
-    ]
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {:bitwise_operation,2},
+    {:negation_operation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
   end
    test "Multi digit negation"do
-   code ="""
-     int main(){
-      return ~-1000;
-     }
-     """
-     s_code = Sanitizer.sanitize_source(code)
-     assert Lexer.scan_words(s_code) ==
-    [
-      :int_keyword,
-      :main_keyword,
-      :open_paren,
-      :close_paren,
-      :open_brace,
-      :return_keyword,
-      :bitwise_operation,
-      :negation_operation,
-      {:constant, 1000},
-      :semicolon,
-      :close_brace
-    ]
+  s_code = ["int","main(){","\r\n","return","~-1000;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {:bitwise_operation,2},
+    {:negation_operation,2},
+    {{:constant, 1000},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+
   end
   test "NL & BO"do
-  code =
-  """
-    int main(){
-     return !~1000;
-      }
-  """
-s_code = Sanitizer.sanitize_source(code)
-assert Lexer.scan_words(s_code) ==
-     [
-      :int_keyword,
-      :main_keyword,
-      :open_paren,
-      :close_paren,
-      :open_brace,
-      :return_keyword,
-      :negation_logical,
-      :bitwise_operation,
-      {:constant, 1000},
-      :semicolon,
-      :close_brace
-      ]
+  s_code = ["int","main(){","\r\n","return","!~1000;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {:negation_logical,2},
+    {:bitwise_operation,2},
+    {{:constant, 1000},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+
   end
 test "NL & NO"do
-code ="""
-    int main(){
-    return !-100;
-     }
-    """
-    s_code = Sanitizer.sanitize_source(code)
- assert Lexer.scan_words(s_code) ==
+  s_code = ["int","main(){","\r\n","return","!-1000;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
     [
-    :int_keyword,
-    :main_keyword,
-    :open_paren,
-    :close_paren,
-    :open_brace,
-    :return_keyword,
-    :negation_logical,
-    :negation_operation,
-    {:constant, 100},
-    :semicolon,
-    :close_brace
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,2},
+      {:negation_logical,2},
+      {:negation_operation,2},
+      {{:constant, 1000},2},
+      {:semicolon,2},
+      {:close_brace,3}
     ]
+
   end
 test "Doble Negation "do
- code ="""
-  int main(){
-  return --100;
-  }
-  """
- s_code = Sanitizer.sanitize_source(code)
- assert Lexer.scan_words(s_code) ==
+  s_code = ["int","main(){","\r\n","return","--1000;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
     [
-    :int_keyword,
-    :main_keyword,
-    :open_paren,
-    :close_paren,
-    :open_brace,
-    :return_keyword,
-    :negation_operation,
-    :negation_operation,
-    {:constant, 100},
-    :semicolon,
-    :close_brace
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,2},
+      {:negation_operation,2},
+      {:negation_operation,2},
+      {{:constant, 1000},2},
+      {:semicolon,2},
+      {:close_brace,3}
     ]
  end
- test "Doble Negation Logical "do
-  code ="""
-   int main(){
-   return !!100;
-   }
-   """
-  s_code = Sanitizer.sanitize_source(code)
+ test "Doble Negation Logical" do
+  s_code = ["int","main(){","\r\n","return","!!100;","\r\n","}"]
   assert Lexer.scan_words(s_code) ==
-     [
-     :int_keyword,
-     :main_keyword,
-     :open_paren,
-     :close_paren,
-     :open_brace,
-     :return_keyword,
-     :negation_logical,
-     :negation_logical,
-     {:constant, 100},
-     :semicolon,
-     :close_brace
-     ]
+    [
+      {:int_keyword,1},
+      {:main_keyword,1},
+      {:open_paren,1},
+      {:close_paren,1},
+      {:open_brace,1},
+      {:return_keyword,2},
+      {:negation_logical,2},
+      {:negation_logical,2},
+      {{:constant, 100},2},
+      {:semicolon,2},
+      {:close_brace,3}
+    ]
+
   end
   test "Doble Bitwise Operation "do
-    code ="""
-     int main(){
-     return ~~100;
-     }
-     """
-    s_code = Sanitizer.sanitize_source(code)
+    s_code = ["int","main(){","\r\n","return","~~100;","\r\n","}"]
     assert Lexer.scan_words(s_code) ==
-       [
-       :int_keyword,
-       :main_keyword,
-       :open_paren,
-       :close_paren,
-       :open_brace,
-       :return_keyword,
-       :bitwise_operation,
-       :bitwise_operation,
-       {:constant, 100},
-       :semicolon,
-       :close_brace
-       ]
+    [
+       {:int_keyword,1},
+       {:main_keyword,1},
+       {:open_paren,1},
+       {:close_paren,1},
+       {:open_brace,1},
+       {:return_keyword,2},
+       {:bitwise_operation,2},
+       {:bitwise_operation,2},
+       {{:constant, 100},2},
+       {:semicolon,2},
+       {:close_brace,3}
+     ]
     end
 test "Multiple Negation "do
-code ="""
-      int main(){
-      return !~-!~-100;
-      }
-      """
-s_code = Sanitizer.sanitize_source(code)
-assert Lexer.scan_words(s_code) ==
+  s_code = ["int","main(){","\r\n","return","!~-!~-100;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
   [
-  :int_keyword,
-  :main_keyword,
-  :open_paren,
-  :close_paren,
-  :open_brace,
-  :return_keyword,
-  :negation_logical,
-  :bitwise_operation,
-  :negation_operation,
-  :negation_logical,
-  :bitwise_operation,
-  :negation_operation,
-  {:constant, 100},
-  :semicolon,
-  :close_brace
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {:negation_logical,2},
+    {:bitwise_operation,2},
+    {:negation_operation,2},
+    {:negation_logical,2},
+    {:bitwise_operation,2},
+    {:negation_operation,2},
+    {{:constant, 100},2},
+    {:semicolon,2},
+    {:close_brace,3}
   ]
+
 end
-
-
-
-
-  # tests to fail
-  test "wrong case", state do
-    code = """
-    int main() {
-      RETURN 2;
-    }
-    """
-
-    s_code = Sanitizer.sanitize_source(code)
-
-    expected_result = List.update_at(state[:tokens], 5, fn _ -> :error end)
-    assert Lexer.scan_words(s_code) == expected_result
+# tests to fail
+  test "wrong case" do
+    s_code = ["int","main(){","\r\n","RETURN","2;","\r\n","}"]
+    assert Lexer.scan_words(s_code) == {:error, "Token not valid: RETURN in line 2"}
   end
 end
