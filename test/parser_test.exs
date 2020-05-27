@@ -2,7 +2,7 @@ defmodule ParserTest do
   use ExUnit.Case
   doctest Parser
 
-  #Nuevas Test del parser entrega 1
+  #Nuevas Test del parser entrega 1 con modificaciones respecto a entrega 3
   test "parser return 2" do
     s_code = Lexer.scan_words(["int", "main(){","\r\n", "return", "2;","\r\n","}"])
     assert Parser.parse_program(s_code) ==
@@ -83,6 +83,105 @@ defmodule ParserTest do
     }
 
   end
+  #Nuevas pruebas entrega 2 con modificaciones respecto a entrega 3
+  test "parser negation operational"do
+    code = ["int","main(){","\r\n","return","-2;","\r\n","}"]
+    s_code = Lexer.scan_words(code)
+    assert Parser.parse_program(s_code) ==
+    %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            node_name: :unitary_expression,
+            right_node: nil,
+            value: :negation_operation
+          },
+          node_name: :return,
+          right_node: nil,
+          value: nil
+        },
+        node_name: :function,
+        right_node: nil,
+        value: :main
+      },
+      node_name: :program,
+      right_node: nil,
+      value: nil
+    }
+
+  end
+  test "parser bitwise operational"do
+    code = ["int","main(){","\r\n","return","~2;","\r\n","}"]
+    s_code = Lexer.scan_words(code)
+    assert Parser.parse_program(s_code) ==
+    %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            node_name: :unitary_expression,
+            right_node: nil,
+            value: :bitwise_operation
+          },
+          node_name: :return,
+          right_node: nil,
+          value: nil
+        },
+        node_name: :function,
+        right_node: nil,
+        value: :main
+      },
+      node_name: :program,
+      right_node: nil,
+      value: nil
+    }
+
+  end
+  test "parser negation logical"do
+    code = ["int","main(){","\r\n","return","!2;","\r\n","}"]
+    s_code = Lexer.scan_words(code)
+    assert Parser.parse_program(s_code) ==
+    %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            node_name: :unitary_expression,
+            right_node: nil,
+            value: :negation_logical
+          },
+          node_name: :return,
+          right_node: nil,
+          value: nil
+        },
+        node_name: :function,
+        right_node: nil,
+        value: :main
+      },
+      node_name: :program,
+      right_node: nil,
+      value: nil
+    }
+
+  end
+
+
 
 
 end
