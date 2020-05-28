@@ -375,6 +375,289 @@ test "Multiple Negation "do
   ]
 
 end
+#Nuevas pruebas entrega 3
+test "Plus operation" do
+  s_code = ["int","main(){","\r\n","return","2+3+4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:plus_operation,2},
+    {{:constant, 3},2},
+    {:plus_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multi negation operational" do
+  s_code = ["int","main(){","\r\n","return","2-3-4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:negation_operation,2},
+    {{:constant, 3},2},
+    {:negation_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multi multiplication" do
+  s_code = ["int","main(){","\r\n","return","2*3*4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:multiplication_operation,2},
+    {{:constant, 3},2},
+    {:multiplication_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multi divition" do
+  s_code = ["int","main(){","\r\n","return","2/3/4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:divition_operation,2},
+    {{:constant, 3},2},
+    {:divition_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "plus & negation" do
+  s_code = ["int","main(){","\r\n","return","2-3+4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:negation_operation,2},
+    {{:constant, 3},2},
+    {:plus_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "plus & multiplication" do
+  s_code = ["int","main(){","\r\n","return","2+3*4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:plus_operation,2},
+    {{:constant, 3},2},
+    {:multiplication_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "plus & divition" do
+  s_code = ["int","main(){","\r\n","return","2/3+4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:divition_operation,2},
+    {{:constant, 3},2},
+    {:plus_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multiplication & divition" do
+  s_code = ["int","main(){","\r\n","return","2*3/4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:multiplication_operation,2},
+    {{:constant, 3},2},
+    {:divition_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multiplication & negation" do
+  s_code = ["int","main(){","\r\n","return","2*3-4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:multiplication_operation,2},
+    {{:constant, 3},2},
+    {:negation_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "divition & negation" do
+  s_code = ["int","main(){","\r\n","return","2/3-4;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:divition_operation,2},
+    {{:constant, 3},2},
+    {:negation_operation,2},
+    {{:constant, 4},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multi operation for 3" do
+  s_code = ["int","main(){","\r\n","return","2/3-4*5;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:divition_operation,2},
+    {{:constant, 3},2},
+    {:negation_operation,2},
+    {{:constant, 4},2},
+    {:multiplication_operation,2},
+    {{:constant, 5},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multi operation for 4" do
+  s_code = ["int","main(){","\r\n","return","2/3-4*5+6;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:divition_operation,2},
+    {{:constant, 3},2},
+    {:negation_operation,2},
+    {{:constant, 4},2},
+    {:multiplication_operation,2},
+    {{:constant, 5},2},
+    {:plus_operation,2},
+    {{:constant, 6},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multi operation for 3 with paren" do
+  s_code = ["int","main(){","\r\n","return","(2/3)(-4*5)+6;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {:open_paren,2},
+    {{:constant, 2},2},
+    {:divition_operation,2},
+    {{:constant, 3},2},
+    {:close_paren,2},
+    {:open_paren,2},
+    {:negation_operation,2},
+    {{:constant, 4},2},
+    {:multiplication_operation,2},
+    {{:constant, 5},2},
+    {:close_paren,2},
+    {:plus_operation,2},
+    {{:constant, 6},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "multiplication & negation with paren" do
+  s_code = ["int","main(){","\r\n","return","2*(3-4);","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:multiplication_operation,2},
+    {:open_paren,2},
+    {{:constant, 3},2},
+    {:negation_operation,2},
+    {{:constant, 4},2},
+    {:close_paren,2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
 # tests to fail
   test "wrong case" do
     s_code = ["int","main(){","\r\n","RETURN","2;","\r\n","}"]
