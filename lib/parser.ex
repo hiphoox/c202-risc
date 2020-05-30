@@ -86,11 +86,10 @@ defmodule Parser do
       {error.("return",num), rest}
     end
   end
-
   def parse_expression([next_token | rest]) do
 
     ##al menos se debe de ejecutar una vez term
-    {nodo,resto}=parse_term([next_token | rest])
+    {nodo,resto}=and_expression([next_token | rest])
       case nodo do
         {:error,_}->##devuelve el error si existio
               {nodo,resto}
@@ -101,6 +100,113 @@ defmodule Parser do
   end
 
   def recall_expression([{next_token2,_num}|rest2],{nodo,resto}) do
+    if(next_token2==:or_comparation) do##si es + o - hay que buscar al otro termino
+    [next_token3|rest3]=rest2##pasamos al siguiente token
+    {nodo2,resto2}=and_expression([next_token3 | rest3])##se busca al otro termino
+    case nodo2 do ##verificar si existio error en el segundo termino
+      {:error,_}->##si existio error devolver el error
+          {nodo2,resto2}
+          _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
+            ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
+          resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+          recall_expression(resto2, resultado)##verificamos que no existan mas operadores
+    end
+  else##si no existe + o - retorna el nodo y el resto como lo recibio
+  {nodo,resto}
+  end
+end
+  def and_expression([next_token | rest]) do
+
+    ##al menos se debe de ejecutar una vez term
+    {nodo,resto}=equality_exp([next_token | rest])
+      case nodo do
+        {:error,_}->##devuelve el error si existio
+              {nodo,resto}
+        _->##en otro caso
+          recall_and(resto, {nodo, resto})
+      end
+
+  end
+
+  def recall_and([{next_token2,_num}|rest2],{nodo,resto}) do
+    if(next_token2==:and_comparation) do##si es + o - hay que buscar al otro termino
+    [next_token3|rest3]=rest2##pasamos al siguiente token
+    {nodo2,resto2}=equality_exp([next_token3 | rest3])##se busca al otro termino
+    case nodo2 do ##verificar si existio error en el segundo termino
+      {:error,_}->##si existio error devolver el error
+          {nodo2,resto2}
+          _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
+            ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
+          resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+          recall_and(resto2, resultado)##verificamos que no existan mas operadores
+    end
+  else##si no existe + o - retorna el nodo y el resto como lo recibio
+  {nodo,resto}
+  end
+end
+
+  def equality_exp([next_token | rest]) do
+    ##al menos se debe de ejecutar una vez term
+    {nodo,resto}=relational_exp([next_token | rest])
+      case nodo do
+        {:error,_}->##devuelve el error si existio
+              {nodo,resto}
+        _->##en otro caso
+              [{next_token2,_num}|rest2]=resto
+           if(next_token2==:equal_comparation||next_token2==:notEqual_comparation) do##si es + o - hay que buscar al otro termino
+            [next_token3|rest3]=rest2##pasamos al siguiente token
+             {nodo2,resto2}=relational_exp([next_token3 | rest3])##se busca al otro termino
+               case nodo2 do ##verificar si existio error en el segundo termino
+                    {:error,_}->##si existio error devolver el error
+                      {nodo2,resto2}
+                     _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
+            ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
+                      {%AST{node_name: :binary_comparation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+              end
+            else##si no existe + o - retorna el nodo y el resto como lo recibio
+               {nodo,resto}
+            end
+        end
+  end
+  def relational_exp([next_token | rest]) do
+
+    ##al menos se debe de ejecutar una vez term
+    {nodo,resto}=add_expression([next_token | rest])
+      case nodo do
+        {:error,_}->##devuelve el error si existio
+              {nodo,resto}
+        _->##en otro caso
+              [{next_token2,_num}|rest2]=resto
+           if(next_token2==:lessEqual_comparation||next_token2==:less_comparation||next_token2== :greateEqual_comparation||next_token2== :greate_comparation) do##si es + o - hay que buscar al otro termino
+            [next_token3|rest3]=rest2##pasamos al siguiente token
+             {nodo2,resto2}=add_expression([next_token3 | rest3])##se busca al otro termino
+               case nodo2 do ##verificar si existio error en el segundo termino
+                    {:error,_}->##si existio error devolver el error
+                      {nodo2,resto2}
+                     _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
+            ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
+                      {%AST{node_name: :binary_comparation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+              end
+            else##si no existe + o - retorna el nodo y el resto como lo recibio
+               {nodo,resto}
+            end
+        end
+  end
+   ##-----------------------------------------------------------------------------------ya no se modifica
+  def add_expression([next_token | rest]) do
+
+    ##al menos se debe de ejecutar una vez term
+    {nodo,resto}=parse_term([next_token | rest])
+      case nodo do
+        {:error,_}->##devuelve el error si existio
+              {nodo,resto}
+        _->##en otro caso
+          recall_add(resto, {nodo, resto})
+      end
+
+  end
+
+  def recall_add([{next_token2,_num}|rest2],{nodo,resto}) do
     if(next_token2==:plus_operation||next_token2==:negation_operation) do##si es + o - hay que buscar al otro termino
     [next_token3|rest3]=rest2##pasamos al siguiente token
     {nodo2,resto2}=parse_term([next_token3 | rest3])##se busca al otro termino
@@ -110,7 +216,7 @@ defmodule Parser do
           _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
             ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
           resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
-          recall_expression(resto2, resultado)##verificamos que no existan mas operadores
+          recall_add(resto2, resultado)##verificamos que no existan mas operadores
     end
   else##si no existe + o - retorna el nodo y el resto como lo recibio
   {nodo,resto}
@@ -131,7 +237,7 @@ defmodule Parser do
       else ##si no lo es pasar a sig condiciones
         if(next_token==:open_paren)do
           [next_token2|rest2]=rest## pasamos al siguiente token
-          {nodo,resto}=parse_expression([next_token2|rest2])##buscamos expresion
+          {nodo,resto}=relational_exp([next_token2|rest2])##buscamos expresion+++++++++++++++++++++++++++++++modificar
           case nodo do
             {:error,_}->##error se devuelve
                 {nodo,resto}

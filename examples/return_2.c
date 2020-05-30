@@ -1,3 +1,3 @@
 int main() {
-return (2+3)*4;
+return 4<2&&4==3||3||12;
 }

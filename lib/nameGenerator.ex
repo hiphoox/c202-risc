@@ -1,0 +1,4 @@
+defmodule NameGenerator do
+
+
+end
