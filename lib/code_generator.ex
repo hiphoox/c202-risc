@@ -1,19 +1,28 @@
 defmodule CodeGenerator do
+
   def generate_code(ast) do
     IO.puts("Generating assembler")
-    post_order(ast)
-
+    cid=spawn(NameGenerator,:generateLabelEnd,["end",0,self()])
+    post_order(ast,cid)
+    send(cid,{:end,"end"})
   end
 
-  def post_order(node) do
+  def post_order(node,cid) do
     case node do
       nil ->
         nil
 
       ast_node ->
-        code_snippet = post_order(ast_node.left_node)
+        receive do
+          {:label, value} ->
+            IO.puts(value)
+            # code
+        end
+        send(cid, {:next, "Sigue"})
+
+        code_snippet = post_order(ast_node.left_node,cid)
         # TODO: Falta terminar de implementar cuando el arbol tiene mas ramas
-        code_snippet2=post_order(ast_node.right_node)
+        code_snippet2=post_order(ast_node.right_node,cid)
         if(code_snippet2==nil)do
         emit_code(ast_node.node_name, code_snippet, ast_node.value)
         else
