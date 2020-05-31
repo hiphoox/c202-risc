@@ -5,7 +5,7 @@ defmodule NameGenerator do
       {:next, _} ->
           generateLabelEnd(name, num+1, id)
       {:end, _}->
-        IO.puts("Acabe");
+        IO.puts("")
     end
   end
 

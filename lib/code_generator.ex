@@ -2,32 +2,43 @@ defmodule CodeGenerator do
 
   def generate_code(ast) do
     IO.puts("Generating assembler")
-    cid=spawn(NameGenerator,:generateLabelEnd,["end",0,self()])
-    post_order(ast,cid)
+    cid=spawn(NameGenerator,:generateLabelEnd,["_clause",0,self()])
+    cid2=spawn(NameGenerator,:generateLabelEnd,["_end",0,self()])
+    code=post_order(ast,cid,cid2)
     send(cid,{:end,"end"})
+    send(cid2,{:end,"end"})
+    code
   end
 
-  def post_order(node,cid) do
+  def post_order(node,cid,cid2) do
     case node do
       nil ->
         nil
 
       ast_node ->
-        receive do
-          {:label, value} ->
-            IO.puts(value)
-            # code
-        end
-        send(cid, {:next, "Sigue"})
 
-        code_snippet = post_order(ast_node.left_node,cid)
+
+        code_snippet = post_order(ast_node.left_node,cid,cid2)
         # TODO: Falta terminar de implementar cuando el arbol tiene mas ramas
-        code_snippet2=post_order(ast_node.right_node,cid)
+        code_snippet2=post_order(ast_node.right_node,cid,cid2)
         if(code_snippet2==nil)do
         emit_code(ast_node.node_name, code_snippet, ast_node.value)
         else
-        emit_code(ast_node.node_name,code_snippet,code_snippet2,ast_node.value)
-        end;
+          if(ast_node.value != :or_comparation && ast_node.value != :and_comparation)do
+            emit_code(ast_node.node_name,code_snippet,code_snippet2,ast_node.value)
+          else
+            receive do
+              {:label, clause}->
+                receive do
+                  {:label, endTag} ->
+                    send(cid, {:next, "Sigue"})
+                    send(cid2, {:next, "Sigue"})
+                      emit_code(ast_node.node_name,code_snippet,code_snippet2,clause,endTag,ast_node.value)
+                end
+            end
+          end
+
+        end
     end
   end
 
@@ -49,7 +60,6 @@ defmodule CodeGenerator do
 
   def emit_code(:return, code_snippet, _) do
     code_snippet<>"""
-
         movl    %ebx, %eax
         ret
     """
@@ -71,7 +81,7 @@ defmodule CodeGenerator do
     movl $0,%eax
     cmpl %eax,%ebx
     movl $0,%ebx
-    sete %dl"
+    sete %bl"
   end
   #el registro ebx se utilizara para almacenar los datos y hacer operaciones unitarias sobre el
   def emit_code(:constant, _code_snippet, value) do
@@ -116,5 +126,87 @@ defmodule CodeGenerator do
     movl %eax,%ebx
     "
 
+  end
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,:equal_comparation)do
+    code_snippet<>"
+    push %ebx
+    "<>code_snippet2<>"
+    pop %eax
+    cmpl %eax,%ebx
+    movl $0,%ebx
+    sete %bl"
+  end
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,:notEqual_comparation)do
+    code_snippet<>"
+    push %ebx
+    "<>code_snippet2<>"
+    pop %eax
+    cmpl %eax,%ebx
+    movl $0,%ebx
+    setne %bl"
+  end
+
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,:lessEqual_comparation)do
+    code_snippet<>"
+    push %ebx
+    "<>code_snippet2<>"
+    pop %eax
+    cmpl %ebx,%eax
+    movl $0,%ebx
+    setle %bl"
+  end
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,:less_comparation)do
+    code_snippet<>"
+    push %ebx
+    "<>code_snippet2<>"
+    pop %eax
+    cmpl %ebx,%eax
+    movl $0,%ebx
+    setl %bl"
+  end
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,:greateEqual_comparation)do
+    code_snippet<>"
+    push %ebx
+    "<>code_snippet2<>"
+    pop %eax
+    cmpl %ebx,%eax
+    movl $0,%ebx
+    setge %bl"
+  end
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,:greate_comparation)do
+    code_snippet<>"
+    push %ebx
+    "<>code_snippet2<>"
+    pop %eax
+    cmpl %ebx,%eax
+    movl $0,%ebx
+    setg %bl"
+  end
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,tag1,tag2,:or_comparation)do
+    code_snippet<>"
+    cmpl $0, %ebx
+    je "<>tag1<>"
+    movl $1, %ebx
+    jmp "<>tag2<>"
+    "<>tag1<>":
+    "<>code_snippet2<>"
+    cmpl $0, %ebx
+    movl $0, %ebx
+    setne %bl
+    "<>"
+    "<>tag2<>":"
+  end
+  def emit_code(:binary_comparation,code_snippet,code_snippet2,tag1,tag2,:and_comparation)do
+    code_snippet<>"
+    cmpl $0, %ebx
+    jne "<>tag1<>"
+    jmp "<>tag2<>"
+    "<>tag1<>":
+    "<>code_snippet2<>"
+    cmpl $0, %ebx
+    movl $0, %ebx
+    setne %bl
+    "<>"
+    "<>tag2<>":"
   end
 end

@@ -100,7 +100,7 @@ defmodule Parser do
   end
 
   def recall_expression([{next_token2,_num}|rest2],{nodo,resto}) do
-    if(next_token2==:or_comparation) do##si es + o - hay que buscar al otro termino
+    if(next_token2==:or_comparation) do##si es || hay que buscar al otro termino
     [next_token3|rest3]=rest2##pasamos al siguiente token
     {nodo2,resto2}=and_expression([next_token3 | rest3])##se busca al otro termino
     case nodo2 do ##verificar si existio error en el segundo termino
@@ -108,7 +108,7 @@ defmodule Parser do
           {nodo2,resto2}
           _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
             ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
-          resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+          resultado={%AST{node_name: :binary_comparation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
           recall_expression(resto2, resultado)##verificamos que no existan mas operadores
     end
   else##si no existe + o - retorna el nodo y el resto como lo recibio
@@ -129,7 +129,7 @@ end
   end
 
   def recall_and([{next_token2,_num}|rest2],{nodo,resto}) do
-    if(next_token2==:and_comparation) do##si es + o - hay que buscar al otro termino
+    if(next_token2==:and_comparation) do##si es && hay que buscar al otro termino
     [next_token3|rest3]=rest2##pasamos al siguiente token
     {nodo2,resto2}=equality_exp([next_token3 | rest3])##se busca al otro termino
     case nodo2 do ##verificar si existio error en el segundo termino
@@ -137,10 +137,10 @@ end
           {nodo2,resto2}
           _->##si no existio error armamos la tupla con el nodo binario y el resto de tokens
             ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
-          resultado={%AST{node_name: :binary_operation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
+          resultado={%AST{node_name: :binary_comparation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
           recall_and(resto2, resultado)##verificamos que no existan mas operadores
     end
-  else##si no existe + o - retorna el nodo y el resto como lo recibio
+  else##si no existe  retorna el nodo y el resto como lo recibio
   {nodo,resto}
   end
 end
@@ -153,7 +153,7 @@ end
               {nodo,resto}
         _->##en otro caso
               [{next_token2,_num}|rest2]=resto
-           if(next_token2==:equal_comparation||next_token2==:notEqual_comparation) do##si es + o - hay que buscar al otro termino
+           if(next_token2==:equal_comparation||next_token2==:notEqual_comparation) do##si es == o != hay que buscar al otro termino
             [next_token3|rest3]=rest2##pasamos al siguiente token
              {nodo2,resto2}=relational_exp([next_token3 | rest3])##se busca al otro termino
                case nodo2 do ##verificar si existio error en el segundo termino
@@ -163,7 +163,7 @@ end
             ##operacion binaria, la operacion que es, el primer termino que sacamos, el segundo termino que sacamos
                       {%AST{node_name: :binary_comparation,value: next_token2,left_node: nodo,right_node: nodo2},resto2}
               end
-            else##si no existe + o - retorna el nodo y el resto como lo recibio
+            else##si no existe retorna el nodo y el resto como lo recibio
                {nodo,resto}
             end
         end
