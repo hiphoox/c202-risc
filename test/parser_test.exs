@@ -503,4 +503,293 @@ test "multi operation paren for 3" do
     value: nil
   }
 end
+#Nuevas pruebas entrega 4
+test "and comparation parser" do
+  code = ["int","main(){","\r\n","return","2&&2;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 2
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            value: :and_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
+test "or comparation parser" do
+  code = ["int","main(){","\r\n","return","2||2;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 2
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            value: :or_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
+test "equal comparation parser" do
+  code = ["int","main(){","\r\n","return","2==2;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 2
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            value: :equal_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
+test " not equal comparation parser" do
+  code = ["int","main(){","\r\n","return","2!=2;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 2
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            value: :notEqual_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
+test " less equal comparation parser" do
+  code = ["int","main(){","\r\n","return","2<=2;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 2
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            value: :lessEqual_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
+test " less comparation parser" do
+  code = ["int","main(){","\r\n","return","2<3;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 2
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 3
+            },
+            value: :less_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
+test " greate equal comparation parser" do
+  code = ["int","main(){","\r\n","return","2>=2;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 2
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            value: :greateEqual_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
+test " greate comparation parser" do
+  code = ["int","main(){","\r\n","return","4>2;","\r\n","}"]
+  s_code = Lexer.scan_words(code)
+  assert Parser.parse_program(s_code) ==
+  %AST{
+    left_node: %AST{
+      left_node: %AST{
+        left_node: %AST{
+          left_node: %AST{
+            left_node: nil,
+            node_name: :constant,
+            right_node: nil,
+            value: 4
+            },
+            node_name: :binary_comparation,
+            right_node: %AST{
+              left_node: nil,
+              node_name: :constant,
+              right_node: nil,
+              value: 2
+            },
+            value: :greate_comparation
+        },
+        node_name: :return,
+        right_node: nil,
+        value: nil
+      },
+      node_name: :function,
+      right_node: nil,
+      value: :main
+    },
+    node_name: :program,
+    right_node: nil,
+    value: nil
+  }
+end
 end

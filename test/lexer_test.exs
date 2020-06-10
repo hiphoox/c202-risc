@@ -658,6 +658,144 @@ test "multiplication & negation with paren" do
     {:close_brace,3}
   ]
 end
+#Nuevas pruebas entrega 3
+test "return or comparation &&" do
+  s_code = ["int","main(){","\r\n","return","2&&2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:and_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "return and comparation ||" do
+  s_code = ["int","main(){","\r\n","return","2||2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:or_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "return equal comparation ==" do
+  s_code = ["int","main(){","\r\n","return","2==2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:equal_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "return not equal comparation !=" do
+  s_code = ["int","main(){","\r\n","return","2!=2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:notEqual_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "return less equal comparation <=" do
+  s_code = ["int","main(){","\r\n","return","2<=2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:lessEqual_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "return less comparation <" do
+  s_code = ["int","main(){","\r\n","return","2<2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:less_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "return greate equal comparation <=" do
+  s_code = ["int","main(){","\r\n","return","2>=2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:greateEqual_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+test "return less comparation >" do
+  s_code = ["int","main(){","\r\n","return","2>2;","\r\n","}"]
+  assert Lexer.scan_words(s_code) ==
+  [
+    {:int_keyword,1},
+    {:main_keyword,1},
+    {:open_paren,1},
+    {:close_paren,1},
+    {:open_brace,1},
+    {:return_keyword,2},
+    {{:constant, 2},2},
+    {:greate_comparation,2},
+    {{:constant, 2},2},
+    {:semicolon,2},
+    {:close_brace,3}
+  ]
+end
+
 # tests to fail
   test "wrong case" do
     s_code = ["int","main(){","\r\n","RETURN","2;","\r\n","}"]
