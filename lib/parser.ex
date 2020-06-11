@@ -253,7 +253,7 @@ end
         else ##si no es unitario o nohabre parentesisi significa que es un valor o caracter invalido
           case next_token do
             {:constant, value} -> {%AST{node_name: :constant, value: value}, rest}
-            _ -> {{:error,"valor invalido#{next_token} in line #{num}"}, rest}
+            _ -> {{:error,"unespected character #{next_token} in line #{num}"}, rest}
             end
         end
       end

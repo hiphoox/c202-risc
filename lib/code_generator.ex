@@ -19,7 +19,6 @@ defmodule CodeGenerator do
 
 
         code_snippet = post_order(ast_node.left_node,cid,cid2)
-        # TODO: Falta terminar de implementar cuando el arbol tiene mas ramas
         code_snippet2=post_order(ast_node.right_node,cid,cid2)
         if(code_snippet2==nil)do
         emit_code(ast_node.node_name, code_snippet, ast_node.value)
@@ -59,10 +58,10 @@ defmodule CodeGenerator do
   end
 
   def emit_code(:return, code_snippet, _) do
-    code_snippet<>"""
+    code_snippet<>"
         movl    %ebx, %eax
         ret
-    """
+    "
   end
   def emit_code(:unitary_expression,code_snippet,:negation_operation) do
     code_snippet<>"""
@@ -85,7 +84,8 @@ defmodule CodeGenerator do
   end
   #el registro ebx se utilizara para almacenar los datos y hacer operaciones unitarias sobre el
   def emit_code(:constant, _code_snippet, value) do
-    "movl $#{value},%ebx"
+    "
+    movl $#{value}, %ebx"
   end
   def emit_code(:binary_operation,code_snippet,code_snippet2,:plus_operation)do
     code_snippet<>"
